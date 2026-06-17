@@ -2,7 +2,7 @@
    SKYCAST WEATHER APP – script.js
    ===================================================== */
 
-const API_KEY  = "41e9c7323df92226bbe773aa94a2df74";
+const API_KEY  = "YOUR_API_KEY";
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 // --- State ---
