@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyCast – Live Weather App</title>
+  <meta name="description" content="SkyCast – Get real-time weather updates for any city in the world. Check temperature, humidity, wind speed, pressure, and 5-day forecasts." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Weather Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ===== HERO SECTION ===== -->
+  <main class="hero" id="hero">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+
+      <!-- Hero Title -->
+      <div class="hero-title-block">
+        <h1 class="hero-title">Welcome to <span class="accent-text">SkyCast</span></h1>
+        <p class="hero-subtitle">Get real-time weather updates for any city in the world.</p>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-wrapper">
+        <div class="search-bar" id="searchBar">
+          <svg class="search-pin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <input
+            type="text"
+            id="cityInput"
+            placeholder="Enter city name..."
+            autocomplete="off"
+            aria-label="Enter city name to search weather"
+          />
+          <button id="searchBtn" aria-label="Search weather">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+        </div>
+
+        <!-- Location + Recent Searches row -->
+        <div class="search-meta">
+          <button id="locationBtn" class="location-btn" aria-label="Use my current location">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Use my location
+          </button>
+          <div id="recentSearches" class="recent-searches hidden" aria-label="Recent searches">
+            <span class="recent-label">Recent:</span>
+            <div id="recentTags" class="recent-tags"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Skeleton -->
+      <div id="loadingSkeleton" class="loading-skeleton hidden" aria-live="polite" aria-label="Loading weather data">
+        <div class="skeleton-card">
+          <div class="skel skel-wide"></div>
+          <div class="skel skel-icon"></div>
+          <div class="skel skel-narrow"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorCard" class="error-card hidden" role="alert">
+        <div class="error-icon">🌧️</div>
+        <h2 class="error-title">City Not Found</h2>
+        <p class="error-msg" id="errorMsg">We couldn't find weather data for that city. Please check the spelling and try again.</p>
+      </div>
+
+      <!-- ===== WEATHER CARD ===== -->
+      <div id="weatherCard" class="weather-card hidden" aria-live="polite">
+
+        <!-- Main Info Row: Temp | Icon | City+Date -->
+        <div class="wcard-main">
+
+          <!-- Left: Temp & Condition -->
+          <div class="wcard-temp-block">
+            <div class="temp-row">
+              <span id="tempValue" class="temp-value"></span>
+              <div class="temp-unit-toggle">
+                <button id="btnCelsius" class="unit-btn active" aria-label="Show Celsius">°C</button>
+                <span class="unit-divider">|</span>
+                <button id="btnFahrenheit" class="unit-btn" aria-label="Show Fahrenheit">°F</button>
+              </div>
+            </div>
+            <p id="weatherDesc" class="weather-desc"></p>
+            <p id="feelsLike" class="feels-like-text"></p>
+          </div>
+
+          <!-- Center: Weather Icon -->
+          <div id="weatherIconLarge" class="wcard-icon" aria-hidden="true"></div>
+
+          <!-- Right: City, Date, Time -->
+          <div class="wcard-location">
+            <div class="city-name-row">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" class="city-pin-icon" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <h2 id="cityName" class="city-name"></h2>
+            </div>
+            <p id="weatherDate" class="weather-date"></p>
+            <p id="weatherTime" class="weather-time"></p>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="wcard-divider"></div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-item" id="statHumidity">
+            <div class="stat-icon-wrap blue">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M12 2C6.48 2 2 9 2 13a10 10 0 0 0 20 0c0-4-4.48-11-10-11zm0 18a8 8 0 0 1-8-8c0-3.13 3.67-9 8-9s8 5.87 8 9a8 8 0 0 1-8 8z"/><path d="M12 6c-3.31 0-6 3.36-6 7h2c0-2.67 1.79-5 4-5s4 2.33 4 5h2c0-3.64-2.69-7-6-7z"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Humidity</span>
+              <span class="stat-value" id="humidityVal"></span>
+            </div>
+          </div>
+
+          <div class="stat-item" id="statWind">
+            <div class="stat-icon-wrap teal">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Wind Speed</span>
+              <span class="stat-value" id="windVal"></span>
+            </div>
+          </div>
+
+          <div class="stat-item" id="statPressure">
+            <div class="stat-icon-wrap red">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M12 2v6M12 22v-6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M22 12h-6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Pressure</span>
+              <span class="stat-value" id="pressureVal"></span>
+            </div>
+          </div>
+
+          <div class="stat-item" id="statVisibility">
+            <div class="stat-icon-wrap indigo">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Visibility</span>
+              <span class="stat-value" id="visibilityVal"></span>
+            </div>
+          </div>
+
+          <div class="stat-item" id="statSunrise">
+            <div class="stat-icon-wrap amber">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Sunrise</span>
+              <span class="stat-value" id="sunriseVal"></span>
+            </div>
+          </div>
+
+          <div class="stat-item" id="statSunset">
+            <div class="stat-icon-wrap orange">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="16 5 12 9 8 5"/></svg>
+            </div>
+            <div class="stat-text">
+              <span class="stat-label">Sunset</span>
+              <span class="stat-value" id="sunsetVal"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Forecast Button -->
+        <div class="forecast-btn-wrap">
+          <button class="forecast-toggle-btn" id="forecastToggleBtn" aria-expanded="false" aria-controls="forecastPanel">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            View 5-Day Forecast
+            <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+
+        <!-- 5-Day Forecast Panel (hidden until toggle) -->
+        <div id="forecastPanel" class="forecast-panel hidden">
+          <h3 class="forecast-heading">5-Day Forecast</h3>
+          <div id="forecastGrid" class="forecast-grid"></div>
+        </div>
+
+      </div>
+      <!-- /weatherCard -->
+
+    </div>
+    <!-- /hero-content -->
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <p class="footer-copy">© 2024 SkyCast. All rights reserved.</p>
+    <div class="footer-socials">
+      <a href="#" aria-label="Facebook" class="social-link" id="fbLink">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="#" aria-label="Twitter" class="social-link" id="twLink">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+      </a>
+      <a href="#" aria-label="Instagram" class="social-link" id="igLink">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
